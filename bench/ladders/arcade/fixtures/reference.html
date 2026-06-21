@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Mini Arcade</title>
+<style>body{margin:0;background:#111;display:flex;justify-content:center}canvas{background:#000;display:block}</style>
+</head><body>
+<canvas id="c" width="400" height="400"></canvas>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,G=20;
+const game={screen:'menu',score:0,tick:0,snake:null,paddle:null,ball:null,bricks:0};
+window.__game=game;
+let loopId=null;
+function loop(step){stop();loopId=setInterval(()=>{game.tick++;step();},120);}
+function stop(){if(loopId){clearInterval(loopId);loopId=null;}}
+function startMenu(){stop();game.screen='menu';ctx.fillStyle='#001';ctx.fillRect(0,0,W,H);ctx.fillStyle='#0f0';ctx.font='24px monospace';ctx.fillText('MINI ARCADE',110,120);ctx.fillText('[S] Snake',140,200);ctx.fillText('[A] Arkanoid',140,240);}
+function startSnake(){game.screen='snake';game.score=0;game.snake={head:{x:10,y:10},dir:{x:1,y:0},len:3,body:[{x:10,y:10},{x:9,y:10},{x:8,y:10}]};game.food={x:15,y:10};loop(snakeStep);}
+function placeFood(){const n=W/G;game.food={x:(game.snake.head.x+5)%n,y:(game.snake.head.y+3)%n};}
+function snakeStep(){const s=game.snake,n=W/G,nx=s.head.x+s.dir.x,ny=s.head.y+s.dir.y;
+  if(nx<0||ny<0||nx>=n||ny>=n||s.body.some(b=>b.x===nx&&b.y===ny)){gameOver();return;}
+  s.head={x:nx,y:ny};s.body.unshift({x:nx,y:ny});
+  if(nx===game.food.x&&ny===game.food.y){game.score++;s.len++;placeFood();}
+  while(s.body.length>s.len)s.body.pop();
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);ctx.fillStyle='#0f0';s.body.forEach(b=>ctx.fillRect(b.x*G,b.y*G,G-1,G-1));ctx.fillStyle='#f00';ctx.fillRect(game.food.x*G,game.food.y*G,G-1,G-1);}
+function startArkanoid(){game.screen='arkanoid';game.score=0;game.paddle={x:W/2-30,w:60};game.ball={x:W/2,y:H-40,vx:3,vy:-3};
+  game.brickList=[];for(let r=0;r<3;r++)for(let i=0;i<8;i++)game.brickList.push({x:i*50+5,y:r*20+20,alive:true});game.bricks=game.brickList.length;loop(arkStep);}
+function arkStep(){const b=game.ball,p=game.paddle;b.x+=b.vx;b.y+=b.vy;
+  if(b.x<5||b.x>W-5)b.vx*=-1;if(b.y<5)b.vy*=-1;
+  if(b.y>H-25&&b.x>p.x&&b.x<p.x+p.w)b.vy*=-1;
+  if(b.y>H){gameOver();return;}
+  game.brickList.forEach(br=>{if(br.alive&&b.x>br.x&&b.x<br.x+48&&b.y>br.y&&b.y<br.y+16){br.alive=false;b.vy*=-1;game.score++;}});
+  game.bricks=game.brickList.filter(br=>br.alive).length;if(game.bricks===0){gameOver();return;}
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);ctx.fillStyle='#0af';game.brickList.forEach(br=>{if(br.alive)ctx.fillRect(br.x,br.y,48,16);});ctx.fillStyle='#0f0';ctx.fillRect(p.x,H-20,p.w,10);ctx.fillStyle='#fff';ctx.fillRect(b.x-4,b.y-4,8,8);}
+function gameOver(){stop();game.screen='gameover';ctx.fillStyle='#200';ctx.fillRect(0,0,W,H);ctx.fillStyle='#f00';ctx.font='28px monospace';ctx.fillText('GAME OVER',110,180);ctx.fillStyle='#fff';ctx.font='16px monospace';ctx.fillText('Score: '+game.score,150,220);ctx.fillText('[Enter] menu',140,260);}
+document.addEventListener('keydown',e=>{const k=e.key;
+  if(game.screen==='menu'){if(k==='s'||k==='S')startSnake();else if(k==='a'||k==='A')startArkanoid();}
+  else if(game.screen==='snake'){const d=game.snake.dir;
+    if(k==='ArrowUp'&&d.y===0)game.snake.dir={x:0,y:-1};else if(k==='ArrowDown'&&d.y===0)game.snake.dir={x:0,y:1};
+    else if(k==='ArrowLeft'&&d.x===0)game.snake.dir={x:-1,y:0};else if(k==='ArrowRight'&&d.x===0)game.snake.dir={x:1,y:0};}
+  else if(game.screen==='arkanoid'){const p=game.paddle;if(k==='ArrowLeft')p.x=Math.max(0,p.x-20);else if(k==='ArrowRight')p.x=Math.min(W-p.w,p.x+20);}
+  else if(game.screen==='gameover'){if(k==='Enter')startMenu();}});
+startMenu();
+</script></body></html>

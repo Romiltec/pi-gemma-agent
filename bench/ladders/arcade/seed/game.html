@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body>
+<canvas id="c" width="400" height="400"></canvas>
+<script>
+const ctx=document.getElementById('c').getContext('2d');
+ctx.fillStyle='#001';ctx.fillRect(0,0,400,400);
+ctx.fillStyle='#0f0';ctx.font='20px monospace';ctx.fillText('MINI ARCADE',120,200);
+window.__game={screen:'menu',score:0,tick:0};
+</script></body></html>

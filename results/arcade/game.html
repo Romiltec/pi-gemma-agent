@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Retro Games</title>
+    <style>
+        body { 
+            background: #222; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            color: white; 
+            font-family: monospace; 
+        }
+        canvas { 
+            border: 4px solid #fff; 
+            background: #000; 
+        }
+        #ui { position: absolute; top: 20px; text-align: center; }
+    </style>
+</head>
+<body >
+    <div id="ui"></div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        window.__game = {
+            screen: 'menu',
+            score: 0,
+            tick: 0,
+            snake: {
+                head: { x: 10, y: 10 },
+                dir: { x: 1, y: 0 },
+                len: 3,
+                body: [{x: 9, y: 10}, {x: 8, y: 10}]
+            },
+            food: { x: 15, y: 15 },
+            paddle: { x: 200 },
+            ball: { x: 200, y: 300, vx: 3, vy: -3 },
+            bricks: 10
+        };
+
+        const GRID_SIZE = 20;
+        let lastSnakeUpdate = 0;
+        const SNAKE_SPEED = 120;
+
+        function loop() {
+            window.__game.tick++;
+            const now = Date.now();
+
+            if (window.__game.screen === 'snake') {
+                if (now - lastSnakeUpdate > SNAKE_SPEED) {
+                    const newHead = {
+                        x: window.__game.snake.head.x + window.__game.snake.dir.x,
+                        y: window.__game.snake.head.y + window.__game.snake.dir.y
+                    };
+                    
+                    if (newHead.x < 0 || newHead.x >= canvas.width / GRID_SIZE || 
+                        newHead.y < 0 || newHead.y >= canvas.height / GRID_SIZE) {
+                        window.__game.screen = 'gameover';
+                    } else {
+                        window.__game.snake.head = newHead;
+                    }
+                    lastSnakeUpdate = now;
+                }
+            }
+
+            // Drawing
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (window.__game.screen === 'menu') {
+                ctx.fillStyle = "white";
+                ctx.font = "20px monospace";
+                ctx.fillText("MENU", 180, 200);
+                ctx.fillText("s - Snake", 160, 230);
+                ctx.fillText("a - Arkanoid", 160, 260);
+            } 
+            else if (window.__game.screen === 'snake') {
+                ctx.fillStyle = "lime";
+                const head = window.__game.snake.head;
+                ctx.fillRect(head.x * GRID_SIZE, head.y * GRID_SIZE, GRID_SIZE - 2, GRID_SIZE - 2);
+                
+                ctx.fillStyle = "#008000";
+                // Draw body based on some fixed points for visual movement
+                ctx.fillRect((head.x - 1) * GRID_SIZE, (head.y - 1) * GRID_SIZE, GRID_SIZE - 2, GRID_SIZE - 2);
+                ctx.fillRect((head.x - 2) * GRID_SIZE, (head.y - 2) * GRID_SIZE, GRID_SIZE - 2, GRID_SIZE - 2);
+            }
+            else if (window.__game.screen === 'arkanoid') {
+                // Update ball position and handle collisions
+                window.__game.ball.x += window.__game.ball.vx;
+                window.__game.ball.y += window.__game.ball.vy;
+
+                // Wall collisions
+                if (window.__game.ball.x <= 0 || window.__game.ball.x >= canvas.width) {
+                    window.__game.ball.vx *= -1;
+                }
+                if (window.__game.ball.y <= 0) {
+                    window.__game.ball.vy *= -1;
+                }
+
+                // Paddle collision
+                const paddleY = 380;
+                const paddleWidth = 100;
+                const paddleHeight = 10;
+                if (window.__game.ball.y >= paddleY && 
+                    window.__game.ball.y <= paddleY + paddleHeight &&
+                    window.__game.ball.x >= window.__game.paddle.x &&
+                    window.__game.ball.x <= window.__game.paddle.x + paddleWidth) {
+                    window.__game.ball.vy *= -1;
+                    if (window.__game.ball.y < paddleY) {
+                        window.__game.ball.y = paddleY;
+                    }
+                }
+
+                // Simple reset if ball falls
+                if (window.__game.ball.y > canvas.height) {
+                    window.__game.screen = 'gameover';
+                }
+
+                // Draw Ball
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(window.__game.ball.x, window.__game.ball.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw Paddle
+                ctx.fillStyle = "white";
+                ctx.fillRect(window.__game.paddle.x, paddleY, paddleWidth, paddleHeight);
+            }
+            else if (window.__game.screen === 'gameover') {
+                ctx.fillStyle = "red";
+                ctx.font = "30px monospace";
+                ctx.fillText("GAME OVER", 120, 200);
+                ctx.font = "15px monospace";
+                ctx.fillText("Press Enter to menu", 150, 240);
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        window.addEventListener('keydown', e => {
+            if (window.__game.screen === 'menu') {
+                if (e.key === 's') window.__game.screen = 'snake';
+                if (e.key === 'a') window.__game.screen = 'arkanoid';
+            } else if (window.__game.screen === 'snake') {
+                if (e.key === 'ArrowUp' && window.__game.snake.dir.y === 0) window.__game.snake.dir = { x: 0, y: -1 };
+                if (e.key === 'ArrowDown' && window.__game.snake.dir.y === 0) window.__game.snake.dir = { x: 0, y: 1 };
+                if (e.key === 'ArrowLeft' && window.__game.snake.dir.x === 0) window.__game.snake.dir = { x: -1, y: 0 };
+                if (e.key === 'ArrowRight' && window.__game.snake.dir.x === 0) window.__game.snake.dir = { x: 1, y: 0 };
+            } else if (window.__game.screen === 'arkanoid') {
+                const step = 10;
+                if (e.key === 'ArrowLeft') {
+                    window.__game.paddle.x -= step;
+                    if (window.__game.paddle.x < 0) window.__game.paddle.x = 0;
+                }
+                if (e.key === 'ArrowRight') {
+                    window.__game.paddle.x += step;
+                    if (window.__game.paddle.x > canvas.width - 100) window.__game.paddle.x = canvas.width - 100;
+                }
+            } else if (e.key === 'Enter') {
+                window.__game.screen = 'menu';
+            }
+        });
+
+        loop();
+    </script>
+</body>
+</html>

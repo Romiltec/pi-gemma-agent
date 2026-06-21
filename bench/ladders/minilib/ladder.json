@@ -1,0 +1,16 @@
+{
+  "name": "minilib",
+  "check": "check.cjs",
+  "target": "lib.js",
+  "seed": "seed/lib.js",
+  "context": "You are building a small CommonJS utility module lib.js (use module.exports = { ... }). Each step adds ONE pure function and must keep the previously added functions working. Read lib.js first, then add only the requested function.",
+  "rungs": [
+    { "id": 1, "title": "add", "prompt": "Add and export a function add(a, b) that returns a + b." },
+    { "id": 2, "title": "isEven", "prompt": "Add and export isEven(n) returning true if n is even, false otherwise." },
+    { "id": 3, "title": "reverse", "prompt": "Add and export reverse(str) returning the input string reversed." },
+    { "id": 4, "title": "clamp", "prompt": "Add and export clamp(x, lo, hi) returning x constrained to the range [lo, hi]." },
+    { "id": 5, "title": "fib", "prompt": "Add and export fib(n) returning the nth Fibonacci number, with fib(0)=0 and fib(1)=1 (so fib(10)=55)." },
+    { "id": 6, "title": "fizzbuzz", "prompt": "Add and export fizzbuzz(n) returning an array for 1..n where multiples of 3 are 'Fizz', of 5 are 'Buzz', of both are 'FizzBuzz', else the number. fizzbuzz(5) === [1,2,'Fizz',4,'Buzz']." },
+    { "id": 7, "title": "unique", "prompt": "Add and export unique(arr) returning the array without duplicates, preserving first-seen order." }
+  ]
+}
