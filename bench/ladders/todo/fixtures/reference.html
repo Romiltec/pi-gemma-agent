@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>To-Do</title>
+    <style>.done{text-decoration:line-through;opacity:.5}</style>
+  </head>
+  <body>
+    <input id="new-todo" placeholder="add a task and press Enter">
+    <ul id="list"></ul>
+    <div id="remaining">0</div>
+    <script>
+      window.__todo = { items: [] };
+      const input = document.getElementById('new-todo');
+      const list = document.getElementById('list');
+      const rem = document.getElementById('remaining');
+      function render() {
+        list.innerHTML = '';
+        window.__todo.items.forEach((it, i) => {
+          const li = document.createElement('li');
+          li.className = 'item' + (it.done ? ' done' : '');
+          const span = document.createElement('span');
+          span.textContent = it.text;
+          span.onclick = () => { it.done = !it.done; render(); };
+          const del = document.createElement('button');
+          del.className = 'del'; del.textContent = 'x';
+          del.onclick = () => { window.__todo.items.splice(i, 1); render(); };
+          li.appendChild(span); li.appendChild(del); list.appendChild(li);
+        });
+        rem.textContent = String(window.__todo.items.filter(it => !it.done).length);
+      }
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && input.value.trim()) {
+          window.__todo.items.push({ text: input.value.trim(), done: false });
+          input.value = ''; render();
+        }
+      });
+      render();
+    </script>
+  </body>
+</html>

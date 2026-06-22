@@ -34,8 +34,8 @@ plus a benchmark to reproduce/extend the result.
 | `bin/pi-gemma` | launcher: Pi → your local model with the winning method baked in |
 | `setup/method.md` | the system prompt that encodes the method (decompose / read-first / replicate / test-and-iterate) |
 | `setup/install.sh` | writes the Pi provider config and installs the launcher (parameterized by endpoint/model) |
-| `bench/` | the ladder benchmark with **pluggable judges** (`arcade`, `minilib`) |
-| `results/` | published artifacts: the playable arcade (`arcade/game.html`) + reports |
+| `bench/` | the ladder benchmark with **pluggable judges** — 5 ladders across domains: `arcade`, `minilib`, `cli`, `api`, `todo` |
+| `results/` | published artifacts: the playable arcade (`arcade/game.html`) + per-ladder reports |
 | `docs/FINDINGS.md` | the experiments and what they show |
 
 ## Quickstart
@@ -45,7 +45,7 @@ local **OpenAI/Anthropic-compatible** model endpoint (e.g. [vLLM](https://docs.v
 Ollama, or LM Studio) serving a model.
 
 ```bash
-git clone https://github.com/rocco-milluzzo/pi-gemma-agent
+git clone https://github.com/Romiltec/pi-gemma-agent
 cd pi-gemma-agent
 
 # Point at your endpoint/model (defaults shown). Writes the Pi provider + installs the launcher.
@@ -63,9 +63,15 @@ method system prompt (`setup/method.md`).
 ## Reproduce the benchmark
 
 ```bash
-cd bench && npm install && cd ..                       # installs Playwright (for the arcade judge)
-bench/runner.sh bench/ladders/minilib pi-anthropic 3   # fast, no browser — JS library by Node tests
-bench/runner.sh bench/ladders/arcade  pi-anthropic 5   # the full Snake+Arkanoid (slower)
+cd bench && npm install && cd ..                       # installs Playwright (for browser judges)
+
+# Node-judged ladders (fast, no browser):
+bench/runner.sh bench/ladders/minilib pi-anthropic 3   # a JS utility library, by Node assertions
+bench/runner.sh bench/ladders/cli     pi-anthropic 3   # a CLI calculator, run as a subprocess
+bench/runner.sh bench/ladders/api     pi-anthropic 3   # a zero-dep HTTP API, booted and queried
+# Playwright-judged ladders (browser):
+bench/runner.sh bench/ladders/todo    pi-anthropic 3   # a To-Do web app (DOM + state)
+bench/runner.sh bench/ladders/arcade  pi-anthropic 5   # the full Snake+Arkanoid (render + physics)
 ```
 
 The runner climbs the ladder rung by rung: each rung starts from the last green state, the

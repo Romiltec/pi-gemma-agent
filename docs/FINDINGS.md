@@ -75,11 +75,22 @@ and replicate structure** — exactly the behaviours that make a "smart" agent s
 small verified steps, a clean tool-call channel, a reasoning budget, and structural
 feedback, a free local model builds a faithful two-game arcade.
 
-## Does it generalize? The `minilib` ladder
+## Does it generalize? Five ladders across domains
 
-To check the method isn't game-specific, a second ladder (`minilib`) builds a small JS
-utility module function-by-function, judged by Node assertions (a different domain, no
-browser). Pi climbs it with the same harness — see `results/minilib/report.md`.
+The laddered small-steps method is not game-specific. The repo ships five ladders, each with
+its own automated judge, spanning very different kinds of software:
+
+| ladder | domain | judge |
+|---|---|---|
+| `arcade` | browser game (Snake + Arkanoid) | Playwright: rendering + physics |
+| `todo` | browser app (To-Do) | Playwright: DOM + `window.__todo` state |
+| `minilib` | pure JS library | Node assertions |
+| `cli` | Node CLI calculator | subprocess stdout / exit codes |
+| `api` | zero-dependency HTTP API | boot server + query routes |
+
+Pi (Gemma 4 12B, this repo's harness) climbs all five. Per-ladder results are published under
+`results/`. The point: give a weak model small verified steps and good feedback, and it works
+across CLIs, backends, frontends, libraries and games alike.
 
 ## What this repo packages
 

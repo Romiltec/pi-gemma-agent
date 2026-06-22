@@ -1,0 +1,13 @@
+{
+  "name": "api",
+  "check": "check.cjs",
+  "target": "server.cjs",
+  "seed": "seed/server.cjs",
+  "context": "You are building a zero-dependency Node.js HTTP API in server.cjs using the built-in 'http' module only (no express, no npm packages). It MUST listen on the port from process.env.PORT. Responses are JSON (content-type application/json). Read the file first; each step adds one route and keeps the others working.",
+  "rungs": [
+    { "id": 1, "title": "health", "prompt": "Add route GET /health that responds with JSON {\"ok\": true}." },
+    { "id": 2, "title": "echo", "prompt": "Add route GET /echo?msg=... that responds with JSON {\"msg\": <the msg query param>}." },
+    { "id": 3, "title": "add", "prompt": "Add route GET /add?a=..&b=.. that responds with JSON {\"sum\": a+b} (numbers)." },
+    { "id": 4, "title": "notfound", "prompt": "Any unknown path must respond with HTTP status 404." }
+  ]
+}

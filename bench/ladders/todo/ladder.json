@@ -1,0 +1,13 @@
+{
+  "name": "todo",
+  "target": "todo.html",
+  "seed": "seed/todo.html",
+  "context": "You are building a To-Do web app in a single self-contained file todo.html (HTML+CSS+JS inline, no dependencies). Read the file first; each step adds one feature and keeps the others working. Use these EXACT testable hooks: a text input with id='new-todo' (pressing Enter in it adds a new task); always expose window.__todo = { items: [{text:String, done:Boolean}] }; render each item as an element with class 'item' that contains its text in a child element and gets the extra class 'done' when completed; clicking the item's text element toggles its done state; each item has a delete button with class 'del'; an element with id='remaining' shows the number of not-done items. Re-render the list from window.__todo.items after every change.",
+  "rungs": [
+    { "id": 1, "title": "boot", "prompt": "todo.html already loads with an #new-todo input and window.__todo.items as an empty array. Nothing to add for this step." },
+    { "id": 2, "title": "add", "prompt": "Add ONLY adding: typing text in #new-todo and pressing Enter pushes { text, done:false } to window.__todo.items and renders it as an element with class 'item' showing the text." },
+    { "id": 3, "title": "toggle", "prompt": "Add ONLY toggling: clicking an item's text element flips its done flag in window.__todo.items and toggles the 'done' class on its '.item'." },
+    { "id": 4, "title": "remove", "prompt": "Add ONLY removing: each item has a delete button with class 'del'; clicking it removes that item from window.__todo.items and from the DOM." },
+    { "id": 5, "title": "counter", "prompt": "Add ONLY the counter: keep the element #remaining updated with the number of not-done items." }
+  ]
+}

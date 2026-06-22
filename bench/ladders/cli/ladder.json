@@ -1,0 +1,14 @@
+{
+  "name": "cli",
+  "check": "check.cjs",
+  "target": "cli.cjs",
+  "seed": "seed/cli.cjs",
+  "context": "You are building a small Node.js CLI calculator in cli.cjs (CommonJS). It is invoked as: node cli.cjs <op> <a> <b>. Read the file first; each step adds one operation and must keep the previous ones working. Parse arguments from process.argv.slice(2) and print the result with console.log.",
+  "rungs": [
+    { "id": 1, "title": "add", "prompt": "Implement op 'add': node cli.cjs add 2 3 prints 5." },
+    { "id": 2, "title": "sub", "prompt": "Add op 'sub': node cli.cjs sub 5 2 prints 3." },
+    { "id": 3, "title": "mul", "prompt": "Add op 'mul': node cli.cjs mul 4 3 prints 12." },
+    { "id": 4, "title": "div", "prompt": "Add op 'div': node cli.cjs div 10 2 prints 5; dividing by zero prints an error and exits with a non-zero code." },
+    { "id": 5, "title": "help", "prompt": "When called with --help or with no arguments, print a line containing the word 'Usage'." }
+  ]
+}

@@ -27,11 +27,22 @@ the climb stops and the reached rung is recorded.
 
 ## Ladders included
 
-- **`arcade`** — a faithful Snake + Arkanoid in one `game.html`, judged with Playwright on
+Five ladders across domains (judge type in brackets):
+
+- **`arcade`** [Playwright] — a faithful Snake + Arkanoid in one `game.html`, judged on
   **rendering during play + physics** (grid-stepped snake, ball bounces with velocity
   inversion, game over, restart). 9 rungs.
-- **`minilib`** — a CommonJS utility module built function-by-function, judged by Node
-  assertions (no browser). 7 rungs. Shows the method isn't game-specific.
+- **`minilib`** [Node] — a CommonJS utility module built function-by-function, judged by Node
+  assertions. 7 rungs.
+- **`cli`** [Node] — a CLI calculator (`cli.cjs`), judged by running it as a subprocess and
+  checking stdout/exit codes. 5 rungs.
+- **`api`** [Node] — a zero-dependency HTTP API (`server.cjs`), judged by booting it on a
+  random port and querying its routes. 4 rungs.
+- **`todo`** [Playwright] — a To-Do web app (`todo.html`), judged on DOM + `window.__todo`
+  state (add / toggle / remove / counter). 5 rungs.
+
+The mix (CLI, backend HTTP, browser app, browser game, pure library) shows the laddered
+small-steps method is domain-independent, not game-specific.
 
 ## Add a ladder
 
