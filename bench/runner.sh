@@ -55,12 +55,16 @@ for ((r=1; r<=N; r++)); do
     attempts=$k
     rm -rf "$SBX"; mkdir -p "$SBX"; cp "$GREEN" "$SBX/$TARGET"
     printf '#!/usr/bin/env bash\nexec node "%s" "$@"\n' "$CHECK" > "$SBX/check.sh"; chmod +x "$SBX/check.sh"
+    before="$(md5sum "$SBX/$TARGET" 2>/dev/null | awk '{print $1}' || md5 -q "$SBX/$TARGET")"
     TASK="$CONTEXT
 CURRENT STEP: $PROMPT_RUNG
 Work ONLY on this step. Read $TARGET first, then make the smallest change that satisfies it; do not break what already works.
 $feedback
 Verify with: ./check.sh $TARGET $r  (it must exit successfully)."
     invoke "$SBX" "$TASK"
+    # write-guard: some models describe the code instead of writing it via a tool → the file never changes.
+    after="$(md5sum "$SBX/$TARGET" 2>/dev/null | awk '{print $1}' || md5 -q "$SBX/$TARGET")"
+    [ "$before" = "$after" ] && echo "  $AGENT R$r attempt $k WARN: $TARGET not modified (model may have narrated the code instead of writing it)"
     OUT="$(node "$CHECK" "$SBX/$TARGET" "$r" 2>/dev/null)"; rc=$?
     if [ "$rc" = 0 ]; then pass=1; cp "$SBX/$TARGET" "$GREEN"; break; fi
     feedback="The previous attempt did NOT pass. Check output (fix ONLY these FAILs, keep what works):
