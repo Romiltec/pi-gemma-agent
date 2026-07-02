@@ -25,6 +25,32 @@ ladder `context`, let it edit + run `./check.sh <target> <rung>`. If the judge f
 output is fed back and the agent retries (up to `K`). On success the green advances; otherwise
 the climb stops and the reached rung is recorded.
 
+## One-shot (hard mode)
+
+`runner.sh` measures capability **with** the scaffold (small steps + feedback). To measure **raw**
+capability, `oneshot.sh` gives the model the whole target in a single prompt — no steps, no retries —
+and scores the best contiguous rung the single output passes:
+
+```bash
+bench/oneshot.sh <ladder-dir> [N-samples]      # e.g. bench/oneshot.sh bench/ladders/arcade 3
+```
+
+Two things make it a *fair* one-shot test (learned the hard way — see below):
+
+1. **Coherent spec, not incremental prompts.** The per-rung prompts are written for laddering
+   ("Add ONLY the menu, no gameplay yet", "keep the others working"). Concatenated into one
+   "build everything" prompt they *contradict* each other and tank the result. `oneshot.sh`
+   passes the full requirements but explicitly neutralizes the incremental wording.
+2. **Write-guard.** Some models describe the code in prose/markdown instead of calling the write
+   tool; the target then never changes and every rung fails (a false `R0`). `oneshot.sh` (and now
+   `runner.sh`) detect "file not modified" and warn, so a *narrated-but-not-written* answer is not
+   mistaken for real output.
+
+Caveat: one-shot is single-sample and **high variance** — the same model/task can swing several
+rungs on prompt phrasing or sampling luck. Use `N>1` (best-of) and a low temperature, and treat
+one-shot as a **diagnostic** ("does the task need the scaffold?"), not a fine-grained ranking.
+Scaffold mode (`runner.sh`) is the reliable comparison metric.
+
 ## Ladders included
 
 Five ladders across domains (judge type in brackets):
