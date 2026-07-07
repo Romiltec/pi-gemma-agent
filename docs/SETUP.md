@@ -160,15 +160,23 @@ pi-gemma                       # provider vllm-anthropic, thinking high  (defaul
 - Result with this repo's harness: full arcade (R9), all everyday ladders first-try — see
   [`FINDINGS.md`](FINDINGS.md).
 
-### Qwen / Qwen-Coder (e.g. Qwen2.5-Coder-14B, Qwen3-Coder)
+### Qwen (Coder and reasoning variants)
 
 ```bash
+# Coder variant (e.g. Qwen2.5-Coder-14B) — strong native tool-calling, no reasoning:
 MODEL=qwen2.5-coder-14b VLLM_URL=http://<host>:8000 CTX=131072 ./setup/install.sh
-PI_GEMMA_PROVIDER=vllm PI_GEMMA_MODEL=qwen2.5-coder-14b PI_GEMMA_THINKING=medium pi-gemma
+PI_GEMMA_PROVIDER=vllm PI_GEMMA_MODEL=qwen2.5-coder-14b PI_GEMMA_THINKING=off pi-gemma
+
+# Reasoning variant (e.g. a Qwen 3.x 27B that emits thinking) — it reasons on its own:
+MODEL=qwen3.6-27b VLLM_URL=http://<host>:8000 CTX=131072 ./setup/install.sh
+PI_GEMMA_PROVIDER=vllm PI_GEMMA_MODEL=qwen3.6-27b PI_GEMMA_THINKING=off pi-gemma
 ```
-- Channel: **`vllm`** (OpenAI) — Qwen has solid native tool-calling. Thinking **medium/off**:
-  Coder variants are strong, so save tokens. Bump `MAXTOK` if you want longer single edits.
-- Serve with the Qwen-appropriate `--tool-call-parser`.
+- Channel: **`vllm`** (OpenAI) — Qwen has solid native tool-calling, so the Anthropic channel
+  isn't needed. Serve with the Qwen-appropriate `--tool-call-parser`.
+- Thinking: keep Pi's `--thinking` **off/low** — Coder variants are already strong, and
+  *reasoning* Qwen models (which emit their own thinking) don't need a second budget on top.
+- These larger/stronger models typically clear the everyday ladders easily; use `arcade` to
+  stress them.
 
 ### Any other model (template)
 
@@ -178,6 +186,31 @@ PI_GEMMA_PROVIDER=vllm PI_GEMMA_MODEL=qwen2.5-coder-14b PI_GEMMA_THINKING=medium
 4. Make a `pi-<model>` alias with the winning `PI_GEMMA_PROVIDER`/`MODEL`/`THINKING`.
 
 ---
+
+## Appendix — using Claude Code (or Codex/OpenCode) with the same local model
+
+This repo optimizes **Pi**, but the same local endpoint drives other agents:
+
+- **OpenCode** speaks OpenAI natively → point a provider at `http://<host>:8000/v1`.
+- **Claude Code** speaks the **Anthropic Messages API** → point it at the `/v1/messages`
+  endpoint (vLLM serves it) via env vars. Because this is the Anthropic channel, it also works
+  for models whose *OpenAI* tool-calls are unreliable (e.g. Gemma):
+
+  ```bash
+  claude-local() {
+    ANTHROPIC_BASE_URL="http://<host>:8000" \
+    ANTHROPIC_AUTH_TOKEN="local" \
+    ANTHROPIC_MODEL="<id>" \
+    ANTHROPIC_SMALL_FAST_MODEL="<id>" \
+    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
+    command claude "$@"
+  }
+  ```
+
+  Reasoning models (e.g. a Qwen 3.x that emits `thinking` blocks) work as-is — Claude Code
+  handles the thinking blocks. Note that Claude Code's harness is heavier (larger system
+  prompt, more injected tools) than Pi's — great on capable models, but it can overwhelm a
+  small one, which is exactly the effect this repo's benchmark measures.
 
 ## Tuning knobs (summary)
 
