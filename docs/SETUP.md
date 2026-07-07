@@ -55,6 +55,10 @@ Run the installer once per model (it's additive — several models coexist):
 MODEL=<id> VLLM_URL=http://localhost:8000 CTX=131072 ./setup/install.sh
 ```
 
+For a model on a **different endpoint** (so it gets its own providers instead of overwriting
+the default ones), add a `NAME` suffix — e.g. `NAME=qwen ... ./setup/install.sh` creates
+`vllm-qwen` / `vllm-qwen-anthropic`. Add `REASONING=true` for models that emit thinking.
+
 This writes two providers into `~/.pi/agent/models.json`, both pointing at your endpoint, and
 adds `<id>` to each:
 
@@ -162,21 +166,29 @@ pi-gemma                       # provider vllm-anthropic, thinking high  (defaul
 
 ### Qwen (Coder and reasoning variants)
 
-```bash
-# Coder variant (e.g. Qwen2.5-Coder-14B) — strong native tool-calling, no reasoning:
-MODEL=qwen2.5-coder-14b VLLM_URL=http://<host>:8000 CTX=131072 ./setup/install.sh
-PI_GEMMA_PROVIDER=vllm PI_GEMMA_MODEL=qwen2.5-coder-14b PI_GEMMA_THINKING=off pi-gemma
+Qwen usually runs on a **different endpoint** than your other models, so give it its own
+providers with the `NAME` suffix (this does **not** touch the default `vllm`/`vllm-anthropic`
+providers used by e.g. Gemma):
 
-# Reasoning variant (e.g. a Qwen 3.x 27B that emits thinking) — it reasons on its own:
-MODEL=qwen3.6-27b VLLM_URL=http://<host>:8000 CTX=131072 ./setup/install.sh
-PI_GEMMA_PROVIDER=vllm PI_GEMMA_MODEL=qwen3.6-27b PI_GEMMA_THINKING=off pi-gemma
+```bash
+# Register Qwen on its own providers ('vllm-qwen' + 'vllm-qwen-anthropic'):
+NAME=qwen MODEL=qwen3.6-27b VLLM_URL=http://<qwen-host>:8000 CTX=131072 REASONING=true ./setup/install.sh
+
+# Launch (OpenAI channel, Pi's own thinking off — Qwen reasons on its own):
+PI_GEMMA_PROVIDER=vllm-qwen PI_GEMMA_MODEL=qwen3.6-27b PI_GEMMA_THINKING=off pi-gemma
+
+# ...or make a permanent alias:
+echo 'pi-qwen(){ PI_GEMMA_PROVIDER=vllm-qwen PI_GEMMA_MODEL=qwen3.6-27b PI_GEMMA_THINKING=off pi-gemma "$@"; }' >> ~/.zshrc
 ```
-- Channel: **`vllm`** (OpenAI) — Qwen has solid native tool-calling, so the Anthropic channel
-  isn't needed. Serve with the Qwen-appropriate `--tool-call-parser`.
-- Thinking: keep Pi's `--thinking` **off/low** — Coder variants are already strong, and
-  *reasoning* Qwen models (which emit their own thinking) don't need a second budget on top.
-- These larger/stronger models typically clear the everyday ladders easily; use `arcade` to
-  stress them.
+
+- **Channel: `vllm-qwen`** (OpenAI) — Qwen has clean native tool-calling, so the Anthropic
+  channel isn't needed (verified: file edits work with 0 malformed tool-calls). Serve with the
+  Qwen-appropriate `--tool-call-parser`.
+- **`REASONING=true`** for a reasoning Qwen (one that emits `thinking`); use `false` for a plain
+  Coder variant (e.g. Qwen2.5-Coder — set `PI_GEMMA_THINKING=off` there too, it's already strong).
+- **Speed:** a local reasoning 27B *thinks* before answering, so each turn is slower than a small
+  model — the trade for higher accuracy. Bump `MAXTOK` if edits get truncated.
+- These larger models clear the everyday ladders easily; use `arcade` to stress them.
 
 ### Any other model (template)
 
