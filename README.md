@@ -60,6 +60,11 @@ The launcher applies three levers that make a small model punch above its weight
 `--provider vllm-anthropic` (clean tool-calls), `--thinking high` (reasoning budget), and the
 method system prompt (`setup/method.md`).
 
+> **Configuring other models (Qwen, and any local model):** see **[`docs/SETUP.md`](docs/SETUP.md)**
+> — a full, replicable guide: serving with tool calling, choosing the right tool-call channel
+> per model, tuned recipes for **Gemma 4 12B** and **Qwen (Coder)**, a template for any model,
+> and using the bench to validate a new model/endpoint.
+
 ## Reproduce the benchmark
 
 ```bash

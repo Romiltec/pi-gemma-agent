@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# pi-starbuck — Pi coding agent on Qwen3.6-27B served by vLLM on host "starbuck" (100.64.0.87:8000).
+# Deep thinking + method system-prompt (validated on Gemma 12B, see docs/FINDINGS.md).
+# Provider: openai-completions — verified with a manual tool-call probe that Qwen3.6-27B's
+# tool_calls come back clean and well-formed on this channel (unlike Gemma's gemma4 parser,
+# which needed the anthropic-messages workaround). Do not copy the Gemma provider choice blindly.
+# Override via env: PI_STARBUCK_MODEL, PI_STARBUCK_THINKING, PI_STARBUCK_PROVIDER.
+set -euo pipefail
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+  SOURCE="$(readlink "$SOURCE")"; [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+HERE="$(cd -P "$(dirname "$SOURCE")/.." >/dev/null 2>&1 && pwd)"
+
+MODEL="${PI_STARBUCK_MODEL:-qwen3.6-27b}"
+THINKING="${PI_STARBUCK_THINKING:-high}"
+PROVIDER="${PI_STARBUCK_PROVIDER:-starbuck}"
+
+exec pi --provider "$PROVIDER" --model "$MODEL" --thinking "$THINKING" \
+  --append-system-prompt "$(cat "$HERE/setup/method.md")" "$@"
