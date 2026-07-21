@@ -4,18 +4,47 @@ A model builds a project **as a ladder of tiny verified steps**. A generic runne
 agent up any ladder, with an outer **retry + feedback** loop; pluggable **judges** make it
 domain-agnostic.
 
+## Prerequisites
+
+```bash
+cd bench && npm install && cd ..        # Playwright (for browser-based judges)
+```
+
 ## Run
 
 ```bash
-cd bench && npm install && cd ..        # Playwright, for browser-based judges (arcade)
 bench/runner.sh <ladder-dir> [agent] [K]
 ```
 
 - `<ladder-dir>`: e.g. `bench/ladders/arcade` or `bench/ladders/minilib`
-- `agent`: `pi-anthropic` (default) or `pi`
+- `agent`: label for the CSV report (e.g. `pi-anthropic`, `starbuck`, `qwen-openai`)
 - `K`: max attempts per rung (default 5)
 
-Env: `BENCH_CAP_SECS` (per-attempt time cap), `PI_GEMMA_MODEL`, `PI_GEMMA_THINKING`.
+### Environment variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `PI_GEMMA_MODEL` | `gemma-4-12b-it` | Model ID to use |
+| `PI_GEMMA_PROVIDER` | `vllm-anthropic` | Provider name (determined by agent arg: `pi-anthropic` → `vllm-anthropic`, `pi` → `vllm`, otherwise uses env) |
+| `PI_GEMMA_THINKING` | `high` | Thinking level |
+| `PI_GEMMA_METHOD` | `setup/method.md` | Path to method system prompt |
+| `BENCH_CAP_SECS` | `220` | Per-attempt time cap (seconds) |
+
+### Examples
+
+```bash
+# Default (Gemma via Anthropic channel):
+bench/runner.sh bench/ladders/cli     pi-anthropic 3
+bench/runner.sh bench/ladders/minilib pi-anthropic 3
+bench/runner.sh bench/ladders/arcade  pi-anthropic 5
+
+# Qwen via starbuck provider:
+PI_GEMMA_MODEL=qwen3.6-27b PI_GEMMA_PROVIDER=starbuck bench/runner.sh bench/ladders/cli starbuck 5
+
+# One-shot (no scaffold, raw capability):
+bench/oneshot.sh bench/ladders/arcade 3
+```
+
 Work/sandboxes and the raw CSV land in `bench/.work/<ladder>/` (git-ignored).
 
 ## How a rung works
@@ -32,8 +61,12 @@ capability, `oneshot.sh` gives the model the whole target in a single prompt —
 and scores the best contiguous rung the single output passes:
 
 ```bash
-bench/oneshot.sh <ladder-dir> [N-samples]      # e.g. bench/oneshot.sh bench/ladders/arcade 3
+bench/oneshot.sh bench/ladders/arcade 3            # default model
+PI_GEMMA_MODEL=qwen3.6-27b PI_GEMMA_PROVIDER=starbuck bench/oneshot.sh bench/ladders/arcade 3
 ```
+
+Same env variables as `runner.sh` (`PI_GEMMA_MODEL`, `PI_GEMMA_PROVIDER`, `PI_GEMMA_THINKING`,
+`PI_GEMMA_METHOD`, `BENCH_CAP_SECS`).
 
 Two things make it a *fair* one-shot test (learned the hard way — see below):
 

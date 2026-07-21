@@ -17,7 +17,7 @@ set -uo pipefail
 
 SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SELF/.." && pwd)"
-METHOD="$ROOT/setup/method.md"
+METHOD="${PI_GEMMA_METHOD:-$ROOT/setup/method.md}"
 
 LADDER_DIR="${1:?usage: runner.sh <ladder-dir> [agent] [K]}"
 AGENT="${2:-pi-anthropic}"
@@ -41,7 +41,7 @@ grep -q "^$AGENT," "$CSV" || cp "$LADDER_DIR/$SEEDREL" "$GREEN"
 
 _cap() { ( "$@" ) & local p=$!; ( sleep "$CAP"; kill -TERM "$p" 2>/dev/null ) & local w=$!; wait "$p" 2>/dev/null; kill "$w" 2>/dev/null; }
 invoke() { # $1 sandbox $2 prompt
-  local prov=vllm-anthropic; [ "$AGENT" = "pi" ] && prov=vllm
+  local prov=vllm-anthropic; [ "$AGENT" = "pi" ] && prov=vllm; prov="${PI_GEMMA_PROVIDER:-$prov}"
   ( cd "$1" && _cap command pi --provider "$prov" --model "$MODEL" --thinking "$THINKING" \
       --append-system-prompt "$(cat "$METHOD")" -p "$2" ) > "$1/agent.log" 2>&1
 }
